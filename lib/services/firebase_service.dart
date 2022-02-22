@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, avoid_print, prefer_const_constructors
+// ignore_for_file: unused_local_variable, avoid_print, prefer_const_constructors, invalid_return_type_for_catch_error
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,9 +16,91 @@ class FirebaseService {
     return auth.authStateChanges();
   }
 
-  Future<QuerySnapshot<Object?>> getData()async{
+  Future<QuerySnapshot<Object?>> getData() async {
+    //sekali baca doang
     CollectionReference product = firestore.collection("product");
     return await product.get();
+  }
+
+  Stream<QuerySnapshot<Object?>> streamData() {
+    CollectionReference product = firestore.collection("product");
+    return product.snapshots();
+  }
+
+  void deleteProduct(BuildContext context, String docId) async {
+    DocumentReference product = firestore.collection("product").doc(docId);
+    int count = 0;
+    try {
+      await product.delete();
+      Alert(
+              context: context,
+              title: "Berhasil",
+              desc: "Berhasil hapus data",
+              buttons: [
+                DialogButton(
+                    child: Text(
+                      "ok",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {Navigator.pop(context);})
+              ],
+              type: AlertType.success)
+          .show();
+    } catch (e) {
+      Alert(
+              context: context,
+              title: "Terjadi kesalahan",
+              desc: "Gagal hapus data",
+              buttons: [
+                DialogButton(
+                    child: Text(
+                      "ok",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {})
+              ],
+              type: AlertType.error)
+          .show();
+    }
+  }
+
+  void updateProduct(
+      String name, String harga, BuildContext context, String docId) async {
+    DocumentReference product = firestore.collection("product").doc(docId);
+    int count = 0;
+    try {
+      await product.update({"name": name, "harga": harga});
+      Alert(
+              context: context,
+              title: "Berhasil",
+              desc: "Berhasil update data",
+              buttons: [
+                DialogButton(
+                    child: Text(
+                      "ok",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () =>
+                        Navigator.popUntil(context, (route) => count++ == 2))
+              ],
+              type: AlertType.success)
+          .show();
+    } catch (e) {
+      Alert(
+              context: context,
+              title: "Terjadi kesalahan",
+              desc: "Gagal update data",
+              buttons: [
+                DialogButton(
+                    child: Text(
+                      "ok",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () => Navigator.pop(context))
+              ],
+              type: AlertType.error)
+          .show();
+    }
   }
 
   void addProduct(String namaProduct, int harga, BuildContext context) async {
@@ -52,8 +134,7 @@ class FirebaseService {
                       "ok",
                       style: TextStyle(color: Colors.white),
                     ),
-                    onPressed: () => Navigator.pop(context)
-                       )
+                    onPressed: () => Navigator.pop(context))
               ],
               type: AlertType.error)
           .show();
